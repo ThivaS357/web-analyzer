@@ -23,5 +23,5 @@ go.work.sum
 
 # env file
 .env
-__debug_bin2261985197
 .vscode/launch.json
+__debug_bin*

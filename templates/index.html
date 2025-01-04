@@ -3,7 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyzer</title>
+    <title>Web Page Analyzer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f8f8;
+        }
+
+        h1, h2 {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 500;
+            flex-basis: 100%; /* Label takes full width on small screens */
+            text-align: left; /* Align label to the left */
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex-grow: 1;
+            min-width: 0; /* Allow input to shrink on smaller screens */
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            font-weight: 500;
+        }
+
+        ul ul {
+            margin-left: 20px;
+        }
+
+        ul ul li {
+          list-style-type: disc;
+        }
+
+        .results-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 600px) {
+            form {
+                flex-direction: column; /* Stack form elements vertically */
+                align-items: stretch;     /* Stretch items to full width */
+            }
+
+            label {
+                margin-bottom: 5px;
+            }
+
+            input[type="text"] {
+                width: 100%; /* Input takes full width */
+                box-sizing: border-box; /* Include padding and border in width */
+            }
+
+            button {
+                width: 100%; /* Button takes full width */
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Web Page Analyzer</h1>
@@ -13,6 +117,7 @@
         <button type="submit">Analyze</button>
     </form>
     {{if .URL}}
+    <div class="results-container">
     <h2>Analysis Results for {{.URL}}</h2>
     <ul>
         <li><strong>Title:</strong> {{.Title}}</li>
@@ -29,6 +134,7 @@
         <li><strong>Broken Links:</strong> {{.BrokenLinks}}</li>
         <li><strong>Has Login Form:</strong> {{.HasLoginForm}}</li>
     </ul>
+    </div>
     {{end}}
 </body>
 </html>
