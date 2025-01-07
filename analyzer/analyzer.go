@@ -79,17 +79,68 @@ func parseHTML(node *html.Node, result *AnalysisResult, baseURL string) {
 				}
 			}
 		case "form":
-			for _, attr := range node.Attr {
-				if attr.Key == "action" && strings.Contains(attr.Val, "login") {
-					result.HasLoginForm = true
-				}
-			}
+			result.HasLoginForm = isLoginFormInline(node)
 		}
 	}
 
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		parseHTML(c, result, baseURL)
 	}
+}
+
+// isLoginFormInline detects login forms during traversal
+func isLoginFormInline(formNode *html.Node) bool {
+	// Check form-level attributes
+	for _, attr := range formNode.Attr {
+		if attr.Key == "action" || attr.Key == "id" || attr.Key == "class" || attr.Key == "name" {
+			if containsLoginKeyword(attr.Val) {
+				return true
+			}
+		}
+	}
+
+	// Inline recursive check for child nodes of the current <form>
+	return containsLoginKeywordInNode(formNode)
+}
+
+// containsLoginKeywordInNode checks attributes and text content for login keywords
+func containsLoginKeywordInNode(node *html.Node) bool {
+	if node == nil {
+		return false
+	}
+
+	// Check text content
+	if node.Type == html.TextNode && containsLoginKeyword(node.Data) {
+		return true
+	}
+
+	// Check attributes
+	for _, attr := range node.Attr {
+		if containsLoginKeyword(attr.Val) {
+			return true
+		}
+	}
+
+	// Recursively check child nodes
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		if containsLoginKeywordInNode(c) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// containsLoginKeyword checks if a string contains login-related keywords
+func containsLoginKeyword(value string) bool {
+	keywords := []string{"login", "signin", "sign-in", "sign_in"}
+	lowerValue := strings.ToLower(value)
+	for _, keyword := range keywords {
+		if strings.Contains(lowerValue, keyword) {
+			return true
+		}
+	}
+	return false
 }
 
 // Detect HTML version from the parsed document
