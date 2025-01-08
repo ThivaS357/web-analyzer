@@ -1,20 +1,65 @@
-# Web Page Analyzer
+# 🌐 Web Page Analyzer
 
-## Overview
-This application analyzes a webpage and provides details such as:
-- HTML Version
-- Page Title
-- Number of Headings
-- Internal and External Links (including broken links)
-- Presence of Login/Sign-in forms
+A **Golang-powered web application** that analyzes web pages and provides insights like HTML version, title, heading counts, internal and external links, broken links, and login forms.
 
-## Prerequisites
-- Golang v1.22.2
-- Git
+---
 
-## Installation
+## 🚀 **Project Overview**
 
-```bash
-git clone https://github.com/ThivaS357/web-analyzer.git
-cd web-analyzer
-go mod tidy
+This application accepts a URL, analyzes the web page content, and returns key information:
+- **HTML Version:** Detects the HTML version used.
+- **Page Title:** Displays the web page's title.
+- **Headings:** Counts all heading tags (`h1` to `h6`).
+- **Links:** Differentiates between internal and external links and identifies broken ones.
+- **Login Form:** Detects login-related forms (`login`, `signin`, etc.).
+
+---
+
+## 🛠️ **Key Components**
+- **main.go:** Handles server routing and request handling using Gin.
+- **analyzer/analyzer.go:** Core logic for webpage analysis using net/http.
+- **templates/index.html:** Frontend HTML page for input and result display.
+
+---
+
+
+## 📦 **Prerequisites**
+
+Make sure you have the following installed:
+- [Golang](https://golang.org/) (version 1.22 or higher)
+- [Git](https://git-scm.com/)
+
+---
+
+## 💻 **Setup Instructions**
+
+1. **Clone the Repository:**
+    ```bash
+    git clone https://github.com/ThivaS357/web-analyzer.git
+    cd web-analyzer
+    ```
+
+2. **Install Dependencies:**
+    ```bash
+    go mod tidy
+    ```
+
+3. **Run the Application:**
+    ```bash
+    go run main.go
+    ```
+
+4. **Access the Web Interface:**  
+    Open your browser and navigate to:  
+    ```
+    http://localhost:8080
+    ```
+
+---
+
+## 🧪 **Running Tests**
+
+### Note: This project size is small and Logic are tighly coupled (Only for 1 API). So, test coverage only addedd to /analyze API. As complexity grows unit test will be added to each individual logic
+
+
+
