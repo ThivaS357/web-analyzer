@@ -62,4 +62,8 @@ Make sure you have the following installed:
 ### Note: This project size is small and Logic are tighly coupled (Only for 1 API). So, test coverage only addedd to /analyze API. As complexity grows unit test will be added to each individual logic
 
 
+### Run to test and create coverage
+go test ./... -coverprofile=coverage.out
 
+### Open and see the tect coverage
+go test ./... -coverprofile=coverage.out
