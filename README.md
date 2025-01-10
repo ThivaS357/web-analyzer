@@ -67,3 +67,7 @@ go test ./... -coverprofile=coverage.out
 
 ### Open and see the tect coverage
 go test ./... -coverprofile=coverage.out
+
+
+## Note:
+We need to keep HTML traversal in a one thread (Go Routine). But checking external linkes and validating broken links parts can be added to other threads (Go Routine)
