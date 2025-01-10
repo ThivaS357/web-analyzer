@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	// Create Gin router
 	router := gin.Default()
 
