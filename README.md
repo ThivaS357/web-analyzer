@@ -28,6 +28,8 @@ This application accepts a URL, analyzes the web page content, and returns key i
 Make sure you have the following installed:
 - [Golang](https://golang.org/) (version 1.22 or higher)
 - [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/) (for containerization)
+- [Docker Compose](https://docs.docker.com/compose/) (for managing multi-container Docker applications)
 
 ---
 
@@ -48,14 +50,26 @@ Make sure you have the following installed:
     ```bash
     go run main.go
     ```
+4. **Run the Application using Docker:**
+    ```bash
+    docker build -t web-analyzer .
+    docker run -p 8080:8080 web-analyzer
+    ```
 
-4. **Access the Web Interface:**  
+5. **Run the Application using Docker Compose:**
+    ```bash
+    docker-compose up --build
+    ```
+
+6. **Access the Web Interface:**  
     Open your browser and navigate to:  
     ```
     http://localhost:8080
     ```
 
 ---
+
+
 
 ## 🧪 **Running Tests**
 
