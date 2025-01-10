@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 )
@@ -41,8 +42,25 @@ func AnalyzeURL(url string) (*AnalysisResult, error) {
 		Headings: make(map[string]int),
 	}
 
+	// Initialize WaitGroup and Channel
+
+	workerCount := 10 // Limit concurrent goroutines to 10
+
+	semaphore := make(chan struct{}, workerCount)
+
+	var waitGroup sync.WaitGroup
+
+	channel := make(chan int)
+
 	// Perform HTML parsing
-	parseHTML(doc, result, url)
+	parseHTML(doc, result, url, semaphore, &waitGroup, channel)
+
+	// Wait for all goroutines to complete
+	waitGroup.Wait()
+	close(channel)
+
+	// The result.BrokenLinks will be updated with the correct count of broken links
+	result.BrokenLinks = len(channel)
 
 	// Detect HTML Version after parsing
 	result.HTMLVersion = detectHTMLVersion(doc)
@@ -51,7 +69,7 @@ func AnalyzeURL(url string) (*AnalysisResult, error) {
 }
 
 // Recursive HTML parser
-func parseHTML(node *html.Node, result *AnalysisResult, baseURL string) {
+func parseHTML(node *html.Node, result *AnalysisResult, baseURL string, semaphore chan struct{}, waitGroup *sync.WaitGroup, channel chan int) {
 	if node.Type == html.ElementNode {
 		switch node.Data {
 		case "title":
@@ -66,15 +84,19 @@ func parseHTML(node *html.Node, result *AnalysisResult, baseURL string) {
 					href := attr.Val
 					if strings.HasPrefix(attr.Val, "http") {
 						result.ExternalLinks++
-						if isLinkBroken(href) {
-							result.BrokenLinks++
-						}
+
+						// Use goroutine for external link checks
+						waitGroup.Add(1)
+						semaphore <- struct{}{} // Acquire semaphore
+						go checkLink(href, channel, waitGroup, semaphore)
 					} else {
 						result.InternalLinks++
 						absoluteURL := resolveURL(baseURL, href)
-						if isLinkBroken(absoluteURL) {
-							result.BrokenLinks++
-						}
+
+						// Use goroutine for internal link checks
+						waitGroup.Add(1)
+						semaphore <- struct{}{} // Acquire semaphore
+						go checkLink(absoluteURL, channel, waitGroup, semaphore)
 					}
 				}
 			}
@@ -84,7 +106,7 @@ func parseHTML(node *html.Node, result *AnalysisResult, baseURL string) {
 	}
 
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		parseHTML(c, result, baseURL)
+		parseHTML(c, result, baseURL, semaphore, waitGroup, channel)
 	}
 }
 
@@ -160,6 +182,15 @@ func detectHTMLVersion(node *html.Node) string {
 		}
 	}
 	return "Unknown"
+}
+
+// checkLink concurrently checks if a link is broken
+func checkLink(link string, channel chan int, wg *sync.WaitGroup, semaphore chan struct{}) {
+	defer wg.Done()
+	defer func() { <-semaphore }() // Release semaphore
+	if isLinkBroken(link) {
+		channel <- 1
+	}
 }
 
 // Check if a link is broken
