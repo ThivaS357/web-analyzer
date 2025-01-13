@@ -22,6 +22,25 @@ This application accepts a URL, analyzes the web page content, and returns key i
 
 ---
 
+## 🔍 **Challenges Faced**
+
+### **Challenge:**  
+**Slowness When Validating Too Many Links**  
+During the analysis of web pages with a high number of internal and external links, the application experienced significant delays. The delay was caused by sequential HTTP calls to validate each link, leading to bottlenecks.
+
+---
+
+### **Solution:**  
+**Using Goroutines with a Semaphore for Concurrent Execution**  
+To address this, I utilized Goroutines for concurrent execution of link validation tasks. A semaphore was implemented to control the number of Goroutines running concurrently, preventing resource exhaustion.
+
+**How It Works:**
+- A **semaphore** (channel) limits the number of concurrent HTTP requests to avoid overwhelming the system.
+- A **sync.WaitGroup** ensures that all Goroutines complete before proceeding.
+- The use of Goroutines significantly reduced execution time while maintaining stability.
+
+---
+
 
 ## 📦 **Prerequisites**
 

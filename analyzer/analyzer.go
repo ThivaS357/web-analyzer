@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -44,7 +45,7 @@ func AnalyzeURL(url string) (*AnalysisResult, error) {
 
 	// Initialize WaitGroup and Channel
 
-	workerCount := 10 // Limit concurrent goroutines to 10
+	workerCount := 5 // Limit concurrent goroutines to 10
 
 	semaphore := make(chan struct{}, workerCount)
 
@@ -82,22 +83,26 @@ func parseHTML(node *html.Node, result *AnalysisResult, baseURL string, semaphor
 			for _, attr := range node.Attr {
 				if attr.Key == "href" {
 					href := attr.Val
+					var link string
 					if strings.HasPrefix(attr.Val, "http") {
 						result.ExternalLinks++
+						link = href
 
-						// Use goroutine for external link checks
-						waitGroup.Add(1)
-						semaphore <- struct{}{} // Acquire semaphore
-						go checkLink(href, channel, waitGroup, semaphore)
 					} else {
 						result.InternalLinks++
-						absoluteURL := resolveURL(baseURL, href)
-
-						// Use goroutine for internal link checks
-						waitGroup.Add(1)
-						semaphore <- struct{}{} // Acquire semaphore
-						go checkLink(absoluteURL, channel, waitGroup, semaphore)
+						link = resolveURL(baseURL, href)
 					}
+
+					// Use a goroutine with controlled concurrency
+					waitGroup.Add(1)
+					semaphore <- struct{}{} // Acquire semaphore
+					go func(link string) {
+						defer waitGroup.Done()
+						defer func() { <-semaphore }() // Release semaphore
+						if isLinkBroken(link) {
+							channel <- 1
+						}
+					}(link)
 				}
 			}
 		case "form":
@@ -185,17 +190,22 @@ func detectHTMLVersion(node *html.Node) string {
 }
 
 // checkLink concurrently checks if a link is broken
-func checkLink(link string, channel chan int, wg *sync.WaitGroup, semaphore chan struct{}) {
+/**func checkLink(link string, channel chan int, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer wg.Done()
 	defer func() { <-semaphore }() // Release semaphore
 	if isLinkBroken(link) {
 		channel <- 1
 	}
-}
+}**/
 
 // Check if a link is broken
 func isLinkBroken(link string) bool {
-	resp, err := http.Get(link)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Get(link)
 	if err != nil || resp.StatusCode >= 400 {
 		return true
 	}
