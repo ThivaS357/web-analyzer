@@ -189,15 +189,6 @@ func detectHTMLVersion(node *html.Node) string {
 	return "Unknown"
 }
 
-// checkLink concurrently checks if a link is broken
-/**func checkLink(link string, channel chan int, wg *sync.WaitGroup, semaphore chan struct{}) {
-	defer wg.Done()
-	defer func() { <-semaphore }() // Release semaphore
-	if isLinkBroken(link) {
-		channel <- 1
-	}
-}**/
-
 // Check if a link is broken
 func isLinkBroken(link string) bool {
 

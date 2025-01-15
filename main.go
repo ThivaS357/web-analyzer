@@ -35,32 +35,46 @@ func homeHandler(c *gin.Context) {
 func analyzeHandler(c *gin.Context) {
 	url := c.PostForm("url")
 	if url == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "URL is required"})
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"Error": "URL is required. Please enter a valid URL.",
+		})
 		return
 	}
 
 	results, err := analyzer.AnalyzeURL(url)
+
+	// Handle 400, 502, 503 and 504 Error
 	if err != nil {
-		handleSpecificErrors(c, err)
+
+		var errorMessage string
+		if strings.Contains(err.Error(), "HTTP status code: 400") {
+			errorMessage = "Bad Request (400): Invalid input URL."
+		} else if strings.Contains(err.Error(), "HTTP status code: 502") {
+			errorMessage = "Bad Gateway (502): Upstream server error."
+		} else if strings.Contains(err.Error(), "HTTP status code: 503") {
+			errorMessage = "Service Unavailable (503): The server is overloaded or down."
+		} else if strings.Contains(err.Error(), "HTTP status code: 504") {
+			errorMessage = "Gateway Timeout (504): The server took too long to respond."
+		} else {
+			errorMessage = "An unexpected error occurred: " + err.Error()
+		}
+
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"Error": errorMessage,
+		})
+
 		return
 	}
 
-	c.HTML(http.StatusOK, "index.html", results)
-}
-
-// Handle specific errors
-func handleSpecificErrors(c *gin.Context, err error) {
-	// Example error messages or custom error handling
-	if strings.Contains(err.Error(), "HTTP status code: 400") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request (400): Invalid input URL"})
-	} else if strings.Contains(err.Error(), "HTTP status code: 502") {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "Bad Gateway (502): Upstream server error"})
-	} else if strings.Contains(err.Error(), "HTTP status code: 503") {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Service Unavailable (503): The server is overloaded or down"})
-	} else if strings.Contains(err.Error(), "HTTP status code: 504") {
-		c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Gateway Timeout (504): The server took too long to respond"})
-	} else {
-		// General server error
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+	// Pass analysis results to the template
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"URL":           results.URL,
+		"Title":         results.Title,
+		"HTMLVersion":   results.HTMLVersion,
+		"Headings":      results.Headings,
+		"InternalLinks": results.InternalLinks,
+		"ExternalLinks": results.ExternalLinks,
+		"BrokenLinks":   results.BrokenLinks,
+		"HasLoginForm":  results.HasLoginForm,
+	})
 }

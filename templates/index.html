@@ -116,6 +116,14 @@
         <input type="text" id="url" name="url" required>
         <button type="submit">Analyze</button>
     </form>
+
+    <!-- Display error message -->
+    {{if .Error}}
+    <div style="color: red; margin-top: 10px;">
+        <strong>Error:</strong> {{.Error}}
+    </div>
+    {{end}}
+
     {{if .URL}}
     <div class="results-container">
     <h2>Analysis Results for {{.URL}}</h2>
