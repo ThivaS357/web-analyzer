@@ -23,7 +23,11 @@ type AnalysisResult struct {
 
 // AnalyzeURL analyzes the webpage and returns details
 func AnalyzeURL(url string) (*AnalysisResult, error) {
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch URL: %v", err)
 	}
